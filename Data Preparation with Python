@@ -1,0 +1,182 @@
+from google.colab import files
+uploaded = files.upload()
+
+import pandas as pd
+
+url = "weather.xlsx"
+df = pd.read_excel(url)
+
+df.dropna(inplace=True)
+
+df['RainToday'] = df['RainToday'].apply(lambda x: 1 if x == 'Yes' else 0)
+df['RISK_MM'] = pd.to_numeric(df['RISK_MM'])
+df['RainTomorrow'] = df['RainTomorrow'].apply(lambda x: 1 if x == 'Yes' else 0)
+
+df['MinTemp'] = pd.to_numeric(df['MinTemp'])
+df['MaxTemp'] = pd.to_numeric(df['MaxTemp'])
+
+df['WindGustDir'] = df['WindGustDir'].astype('category')
+df['WindDir9am'] = df['WindDir9am'].astype('category')
+
+import pandas as pd
+import numpy as np
+import scipy.stats as stats
+
+df = df.replace('-', np.nan)
+df = df.dropna()
+
+direction_to_num = {'N': 0, 'NNE': 1, 'NE': 2, 'ENE': 3,
+                    'E': 4, 'ESE': 5, 'SE': 6, 'SSE': 7,
+                    'S': 8, 'SSW': 9, 'SW': 10, 'WSW': 11,
+                    'W': 12, 'WNW': 13, 'NW': 14, 'NNW': 15}
+df['WindDir9am'] = df['WindDir9am'].map(direction_to_num)
+df['WindDir3pm'] = df['WindDir3pm'].map(direction_to_num)
+
+correlation_matrix = df.corr(numeric_only=True)
+print(correlation_matrix)
+
+X = df[['MinTemp', 'MaxTemp', 'Humidity9am']]
+y = df['Temp9am']
+
+for column in X.columns:
+    slope, intercept, r_value, p_value, std_err = stats.linregress(df[column], y)
+    print(f"Linear Regression for {column}:")
+    print("Slope:", slope)
+    print("Intercept:", intercept)
+    print("R-squared:", r_value ** 2)
+    print("------------------------")
+
+''''''' 
+       **Output** :
+                MinTemp   MaxTemp  Rainfall  Evaporation  Sunshine  \
+MinTemp        1.000000  0.745911  0.197339     0.634720  0.007730   
+MaxTemp        0.745911  1.000000 -0.077263     0.673162  0.444863   
+Rainfall       0.197339 -0.077263  1.000000    -0.011767 -0.158062   
+Evaporation    0.634720  0.673162 -0.011767     1.000000  0.310124   
+Sunshine       0.007730  0.444863 -0.158062     0.310124  1.000000   
+WindGustSpeed  0.190596  0.070911  0.099442     0.258050  0.084768   
+WindDir9am          NaN       NaN       NaN          NaN       NaN   
+WindDir3pm          NaN       NaN       NaN          NaN       NaN   
+WindSpeed9am   0.058319 -0.296485  0.238705     0.006259 -0.103841   
+WindSpeed3pm  -0.106321 -0.219886  0.058151     0.019594  0.046140   
+Humidity9am   -0.160781 -0.325106  0.146321    -0.492218 -0.501596   
+Humidity3pm   -0.013897 -0.520412  0.287244    -0.374532 -0.760267   
+Pressure9am   -0.502352 -0.268054 -0.348731    -0.363936  0.025630   
+Pressure3pm   -0.503255 -0.367040 -0.263710    -0.380702 -0.024120   
+Cloud9am       0.211640 -0.187416  0.172610    -0.114261 -0.697603   
+Cloud3pm       0.125914 -0.144976  0.134894    -0.111387 -0.657198   
+Temp9am        0.910805  0.869609  0.071893     0.688749  0.199659   
+Temp3pm        0.716051  0.988925 -0.089740     0.655896  0.463721   
+RainToday      0.213284 -0.083483  0.676763    -0.044633 -0.177942   
+RISK_MM        0.251519  0.058638  0.101909     0.099727 -0.357231   
+RainTomorrow   0.246593  0.066585  0.147208     0.098546 -0.375677   
+
+               WindGustSpeed  WindDir9am  WindDir3pm  WindSpeed9am  \
+MinTemp             0.190596         NaN         NaN      0.058319   
+MaxTemp             0.070911         NaN         NaN     -0.296485   
+Rainfall            0.099442         NaN         NaN      0.238705   
+Evaporation         0.258050         NaN         NaN      0.006259   
+Sunshine            0.084768         NaN         NaN     -0.103841   
+WindGustSpeed       1.000000         NaN         NaN      0.540717   
+WindDir9am               NaN         NaN         NaN           NaN   
+WindDir3pm               NaN         NaN         NaN           NaN   
+WindSpeed9am        0.540717         NaN         NaN      1.000000   
+WindSpeed3pm        0.687071         NaN         NaN      0.495946   
+Humidity9am        -0.338276         NaN         NaN     -0.222337   
+Humidity3pm        -0.043254         NaN         NaN      0.202122   
+Pressure9am        -0.524737         NaN         NaN     -0.344290   
+Pressure3pm        -0.510826         NaN         NaN     -0.233682   
+Cloud9am           -0.018216         NaN         NaN      0.117625   
+Cloud3pm            0.042849         NaN         NaN     -0.012990   
+Temp9am             0.229164         NaN         NaN     -0.017843   
+Temp3pm             0.036039         NaN         NaN     -0.315906   
+RainToday           0.199491         NaN         NaN      0.274974   
+RISK_MM             0.269151         NaN         NaN      0.053529   
+RainTomorrow        0.255739         NaN         NaN      0.093142   
+
+               WindSpeed3pm  ...  Humidity3pm  Pressure9am  Pressure3pm  \
+MinTemp           -0.106321  ...    -0.013897    -0.502352    -0.503255   
+MaxTemp           -0.219886  ...    -0.520412    -0.268054    -0.367040   
+Rainfall           0.058151  ...     0.287244    -0.348731    -0.263710   
+Evaporation        0.019594  ...    -0.374532    -0.363936    -0.380702   
+Sunshine           0.046140  ...    -0.760267     0.025630    -0.024120   
+WindGustSpeed      0.687071  ...    -0.043254    -0.524737    -0.510826   
+WindDir9am              NaN  ...          NaN          NaN          NaN   
+WindDir3pm              NaN  ...          NaN          NaN          NaN   
+WindSpeed9am       0.495946  ...     0.202122    -0.344290    -0.233682   
+WindSpeed3pm       1.000000  ...     0.015860    -0.344889    -0.318008   
+Humidity9am       -0.260960  ...     0.526695     0.102250     0.109549   
+Humidity3pm        0.015860  ...     1.000000    -0.136289    -0.047607   
+Pressure9am       -0.344889  ...    -0.136289     1.000000     0.966744   
+Pressure3pm       -0.318008  ...    -0.047607     0.966744     1.000000   
+Cloud9am          -0.033882  ...     0.565174    -0.168316    -0.132247   
+Cloud3pm           0.011625  ...     0.530715    -0.146196    -0.146235   
+Temp9am           -0.057454  ...    -0.230820    -0.453669    -0.496853   
+Temp3pm           -0.239119  ...    -0.569348    -0.229817    -0.332099   
+RainToday          0.089367  ...     0.324577    -0.365843    -0.289391   
+RISK_MM            0.012931  ...     0.323494    -0.314815    -0.336461   
+RainTomorrow       0.067102  ...     0.341880    -0.365426    -0.412798   
+
+               Cloud9am  Cloud3pm   Temp9am   Temp3pm  RainToday   RISK_MM  \
+MinTemp        0.211640  0.125914  0.910805  0.716051   0.213284  0.251519   
+MaxTemp       -0.187416 -0.144976  0.869609  0.988925  -0.083483  0.058638   
+Rainfall       0.172610  0.134894  0.071893 -0.089740   0.676763  0.101909   
+Evaporation   -0.114261 -0.111387  0.688749  0.655896  -0.044633  0.099727   
+Sunshine      -0.697603 -0.657198  0.199659  0.463721  -0.177942 -0.357231   
+WindGustSpeed -0.018216  0.042849  0.229164  0.036039   0.199491  0.269151   
+WindDir9am          NaN       NaN       NaN       NaN        NaN       NaN   
+WindDir3pm          NaN       NaN       NaN       NaN        NaN       NaN   
+WindSpeed9am   0.117625 -0.012990 -0.017843 -0.315906   0.274974  0.053529   
+WindSpeed3pm  -0.033882  0.011625 -0.057454 -0.239119   0.089367  0.012931   
+Humidity9am    0.417496  0.289618 -0.395647 -0.321299   0.211472  0.157148   
+Humidity3pm    0.565174  0.530715 -0.230820 -0.569348   0.324577  0.323494   
+Pressure9am   -0.168316 -0.146196 -0.453669 -0.229817  -0.365843 -0.314815   
+Pressure3pm   -0.132247 -0.146235 -0.496853 -0.332099  -0.289391 -0.336461   
+Cloud9am       1.000000  0.528296  0.010012 -0.213509   0.213052  0.268979   
+Cloud3pm       0.528296  1.000000  0.044542 -0.181667   0.100608  0.311882   
+Temp9am        0.010012  0.044542  1.000000  0.843509   0.067753  0.201508   
+Temp3pm       -0.213509 -0.181667  0.843509  1.000000  -0.088277  0.028888   
+RainToday      0.213052  0.100608  0.067753 -0.088277   1.000000  0.170935   
+RISK_MM        0.268979  0.311882  0.201508  0.028888   0.170935  1.000000   
+RainTomorrow   0.288504  0.372255  0.194892  0.033183   0.179199  0.683561   
+
+               RainTomorrow  
+MinTemp            0.246593  
+MaxTemp            0.066585  
+Rainfall           0.147208  
+Evaporation        0.098546  
+Sunshine          -0.375677  
+WindGustSpeed      0.255739  
+WindDir9am              NaN  
+WindDir3pm              NaN  
+WindSpeed9am       0.093142  
+WindSpeed3pm       0.067102  
+Humidity9am        0.202549  
+Humidity3pm        0.341880  
+Pressure9am       -0.365426  
+Pressure3pm       -0.412798  
+Cloud9am           0.288504  
+Cloud3pm           0.372255  
+Temp9am            0.194892  
+Temp3pm            0.033183  
+RainToday          0.179199  
+RISK_MM            0.683561  
+RainTomorrow       1.000000  
+
+[21 rows x 21 columns]
+Linear Regression for MinTemp:
+Slope: 0.8491147621863567
+Intercept: 6.240863531936921
+R-squared: 0.8295658287491483
+------------------------
+Linear Regression for MaxTemp:
+Slope: 0.7185933215751457
+Intercept: -2.201298973794751
+R-squared: 0.756220321254149
+------------------------
+Linear Regression for Humidity9am:
+Slope: -0.16889929933836503
+Intercept: 24.824391950823205
+R-squared: 0.1565365043022497
+------------------------
+                                   '''''''''''
